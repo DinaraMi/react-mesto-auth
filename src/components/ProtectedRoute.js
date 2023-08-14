@@ -6,5 +6,4 @@ const ProtectedRouteElement = ({ element: Component, ...props }) => {
     props.loggedIn === true ? <Component {...props} /> : <Navigate to="/sign-in" replace />
   )
 }
-
 export default ProtectedRouteElement;

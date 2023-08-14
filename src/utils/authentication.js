@@ -1,4 +1,7 @@
 export const BASE_URL = 'https://auth.nomoreparties.co';
+const checkResponse = (res) => {
+  return res.ok ? res.json() : Promise.reject(`Ошибка: ${res.status}`);
+}
 export const register = (email, password) => {
   return fetch(`${BASE_URL}/signup`, {
     method: 'POST',
@@ -11,20 +14,8 @@ export const register = (email, password) => {
       password: password
     })
   })
-    .then((res) => {
-      try {
-        if (res.status === 200) {
-          return res.json();
-        }
-      } catch (e) {
-        return (e)
-      }
-    })
-    .then((res) => {
-      return res;
-    })
-    .catch((err) => console.log(err));
-};
+    .then(res => checkResponse(res));
+}
 export const getToken = () => {
   return localStorage.getItem('token');
 };
@@ -46,14 +37,13 @@ export const authorize = (email, password) => {
       password: password
     })
   })
-    .then((res => res.json()))
+    .then(res => checkResponse(res))
     .then((data) => {
       if (data.token) {
         localStorage.setItem('token', data.token);
         return data;
       }
     })
-    .catch(err => console.log(err))
 };
 export const checkinValidityToken = (token) => {
   return fetch(`${BASE_URL}/users/me`, {
@@ -63,23 +53,8 @@ export const checkinValidityToken = (token) => {
       "Authorization": `Bearer ${token}`
     },
   })
-    .then((res) => {
-      if (!res.ok) {
-        if (res.status === 400) {
-          throw new Error("Токен не предоставлен или имеет неправильный формат");
-        }
-        if (res.status === 401) {
-          throw new Error("Недействительный токен");
-        }
-        throw new Error(`Error ${res.status}: ${res.statusText}`);
-      }
-      return res.json();
-    })
+    .then(res => checkResponse(res))
     .then((data) => {
       return data.data.email;
     })
-    .catch(err => {
-      console.log(err);
-      throw err;
-    });
 }

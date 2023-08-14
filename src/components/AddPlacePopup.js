@@ -1,24 +1,31 @@
-import { useState } from "react";
+import React, { useEffect } from "react";
 import PopupWithForm from "./PopupWithForm";
 import Input from "./Input";
+import { useForm } from "../hooks/useForm";
+import { usePopupClose } from "../hooks/usePopupClose";
 
 function AddPlacePopup({ isOpen, onClose, onAddPlace, isLoading }) {
-  const [name, setName] = useState('');
-  const [link, setLink] = useState('');
+  const { values, handleChange, setValues } = useForm({
+    name: "",
+    link: "",
+  });
+  useEffect(() => {
+    if (isOpen) {
+      setValues({
+        name: "",
+        link: "",
+      });
+    }
+  }, [isOpen, setValues]);
   const handleSubmit = (e) => {
     e.preventDefault();
     onAddPlace({
-      title: name,
-      link: link,
+      title: values.name,
+      link: values.link,
     });
   };
-  const handleNameChange = (e) => {
-    setName(e.target.value);
-  };
-  const handleLinkChange = (e) => {
-    setLink(e.target.value);
-  };
   const buttonLabelText = isLoading ? "Создание" : "Создать";
+  usePopupClose(isOpen, onClose);
   return (
     <PopupWithForm
       title="Новое место"
@@ -30,26 +37,26 @@ function AddPlacePopup({ isOpen, onClose, onAddPlace, isLoading }) {
       buttonLabel={buttonLabelText}
     >
       <Input
-        id='newPlace'
-        name='newPlace'
-        className='popup__text popup__text_type_title'
-        type='text'
-        placeholder='Место'
+        id="newPlace"
+        name="name"
+        className="popup__text popup__text_type_title"
+        type="text"
+        placeholder="Место"
         required
-        minLength='2'
-        maxLength='30'
-        value={name}
-        onChange={handleNameChange}
+        minLength="2"
+        maxLength="30"
+        value={values.name || ''}
+        onChange={handleChange}
       />
       <Input
-        id='link'
-        name='link'
-        className='popup__text popup__text_type_link'
-        type='url'
-        placeholder='Ссылка на картинку'
+        id="link"
+        name="link"
+        className="popup__text popup__text_type_link"
+        type="url"
+        placeholder="Ссылка на картинку"
         required
-        value={link}
-        onChange={handleLinkChange}
+        value={values.link || ''}
+        onChange={handleChange}
       />
     </PopupWithForm>
   );

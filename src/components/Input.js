@@ -10,7 +10,7 @@ function Input({ id, className, type, name, minLength, maxLength, placeholder, r
         maxLength={maxLength}
         placeholder={placeholder}
         required={required}
-        ref= {inputRef}
+        ref={inputRef}
         value={value}
         onChange={onChange}
       />

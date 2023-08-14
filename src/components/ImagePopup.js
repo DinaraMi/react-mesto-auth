@@ -1,7 +1,10 @@
-function ImagePopup({ card, onClose }) {
-  const handleClosePopupImages = () =>{
+import { usePopupClose } from "../hooks/usePopupClose";
+
+function ImagePopup({ card, onClose, isOpen }) {
+  const handleClosePopupImages = () => {
     onClose();
   }
+  usePopupClose(isOpen, onClose);
   return (
     <div className={`popup popup_type_images ${card ? 'popup_opened' : ''}`}>
       <div className="popup__container popup__container_size_m">

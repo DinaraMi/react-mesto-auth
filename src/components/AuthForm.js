@@ -1,5 +1,4 @@
 import React from 'react';
-//import Header from './Header';
 
 function AuthForm({ name, title, children, isLoading, buttonLabel, ariaLabel, onSubmit }) {
   return (

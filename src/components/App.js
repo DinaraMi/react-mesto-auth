@@ -14,6 +14,7 @@ import Login from './Login';
 import Register from './Register';
 import ProtectedRouteElement from './ProtectedRoute';
 import InfoTooltip from './InfoTooltip';
+import * as authentication from '../utils/authentication.js';
 
 function App() {
   const [isEditProfilePopupOpen, setEditProfilePopupOpen] = useState(false);
@@ -29,6 +30,8 @@ function App() {
   const [deleteCardId, setDeleteCardId] = useState('');
   const [isLoading, setLoading] = useState(false);
   const [loggedIn, setLoggedIn] = useState(false);
+  const [userEmail, setUserEmail] = useState('');
+  const navigate = useNavigate();
   useEffect(() => {
     api.getUserInformation()
       .then((dataUser) => {
@@ -41,9 +44,7 @@ function App() {
       .then((dataCards) => {
         setCards(dataCards);
       })
-      .catch((error) => {
-        console.log(error);
-      });
+      .catch(console.error);
   }, []);
   const openImagePopup = () => {
     setImagePopupOpen(true);
@@ -60,7 +61,6 @@ function App() {
   const openInfoTooltip = () => {
     setInfoTooltipOpen(true);
   };
-
   const closeInfoTooltip = () => {
     setInfoTooltipOpen(false);
   };
@@ -89,14 +89,14 @@ function App() {
     setDeleteCardId(cardId);
     openDeletePopup();
   }
-  const handleClosePopup = () => {
+  const handleAllClosePopup = () => {
     setSelectedCard(null);
   };
   const closeAllPopups = () => {
     setEditProfilePopupOpen(false);
     setAddPlacePopupOpen(false);
     setEditAvatarPopupOpen(false);
-    handleClosePopup();
+    handleAllClosePopup();
   };
   const handleCardLike = (card) => {
     const isLiked = card.likes.some(i => i._id === currentUser._id);
@@ -105,16 +105,12 @@ function App() {
         .then((newCard) => {
           setCards((state) => state.map((c) => c._id === card._id ? newCard : c));
         })
-        .catch((error) => {
-          console.log(error);
-        });
+        .catch(console.error);
     } else {
       api.addLike(card._id).then((newCard) => {
         setCards((state) => state.map((c) => c._id === card._id ? newCard : c));
       })
-        .catch((error) => {
-          console.log(error);
-        });
+        .catch(console.error);
     }
   };
   const handleDeleteSubmit = () => {
@@ -124,9 +120,7 @@ function App() {
         setCards((prevCards) => prevCards.filter((card) => card._id !== deleteCardId));
         setDeletePopupOpen(false);
       })
-      .catch((error) => {
-        console.log(error);
-      })
+      .catch(console.error)
       .finally(() => {
         setLoading(false);
       });
@@ -138,9 +132,7 @@ function App() {
         setCurrentUser(res);
         closeAllPopups();
       })
-      .catch((error) => {
-        console.log(error);
-      })
+      .catch(console.error)
       .finally(() => {
         setLoading(false);
       });
@@ -152,9 +144,7 @@ function App() {
         setCurrentUser(res);
         closeAllPopups();
       })
-      .catch((error) => {
-        console.log(error);
-      })
+      .catch(console.error)
       .finally(() => {
         setLoading(false);
       });
@@ -166,26 +156,105 @@ function App() {
         setCards([res, ...cards])
         closeAllPopups();
       })
-      .catch((error) => {
-        console.log(error);
-      })
+      .catch(console.error)
       .finally(() => {
         setLoading(false);
       });;
   }
-  const navigate = useNavigate();
-  const handleLogin = (token) => {
+  const handleRegister = (email, password) => {
+    setLoading(true);
+    authentication.register(email, password)
+      .then(() => {
+        setIsRegistrationSuccessful(true);
+        openInfoTooltip();
+        navigate('/sign-in');
+      })
+      .catch(() => {
+        setIsRegistrationSuccessful(false);
+        openInfoTooltip();
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+  const handleLogin = (email, password) => {
+    setLoading(true);
+    authentication.authorize(email, password)
+      .then((data) => {
+        if (data && data.token) {
+          authentication.setToken(data.token);
+          setLoggedIn(true);
+          navigate('/');
+        } else if (data && data.statusCode === 401) {
+          console.log('Неверные email или пароль');
+        } else {
+          console.log('Что-то пошло не так!');
+        }
+      })
+      .catch(console.error)
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+  useEffect(() => {
+    if (loggedIn) {
+      const token = authentication.getToken();
+      if (token) {
+        authentication.checkinValidityToken(token)
+          .then((data) => {
+            setUserEmail(data);
+          })
+          .catch(error => {
+            console.log(error);
+            setUserEmail('');
+          });
+      }
+    }
+  }, [loggedIn]);
+  const handleAutoLogin = (token) => {
     setLoading(true);
     localStorage.setItem('token', token);
     setLoggedIn(true);
     navigate('/');
     setLoading(false);
   };
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      handleAutoLogin(token);
+    }
+    setLoading(true);
+    const authenticationToken = authentication.getToken();
+    if (authenticationToken) {
+      authentication.checkinValidityToken(authenticationToken)
+        .then((data) => {
+          setLoggedIn(true);
+          setUserEmail(data);
+        })
+        .catch(error => {
+          console.log(error);
+          setLoggedIn(false);
+          setUserEmail('');
+        })
+        .finally(() => {
+          setLoading(false);
+        });
+    } else {
+      setLoggedIn(false);
+      setLoading(false);
+    }
+  }, []);
+  const handleLogout = () => {
+    authentication.removeToken();
+    setLoggedIn(false);
+    setUserEmail('');
+    navigate('/sign-in');
+  };
   return (
     <CurrentUserContext.Provider value={currentUser}>
       <div className="body">
         <div className="page">
-          <Header />
+          <Header isLoggedIn={loggedIn} userEmail={userEmail} onLogout={handleLogout} />
           <Routes>
             <Route path="/" element={
               <ProtectedRouteElement
@@ -202,7 +271,7 @@ function App() {
             }
             />
             <Route path="/sign-in" element={<Login onLogin={handleLogin} />} />
-            <Route path="/sign-up" element={<Register onTooltipSuccess={handleRegisterSuccess} onRegisterFailure={handleRegisterFailure}
+            <Route path="/sign-up" element={<Register onRegister={handleRegister} onTooltipSuccess={handleRegisterSuccess} onRegisterFailure={handleRegisterFailure}
             />} />
           </Routes>
           <Footer />
@@ -227,6 +296,7 @@ function App() {
             isLoading={isLoading}
           />
           {isImagePopupOpen && selectedCard && (<ImagePopup
+            isOpen={isImagePopupOpen}
             card={selectedCard}
             onClose={closeImagePopup}
           />

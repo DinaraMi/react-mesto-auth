@@ -1,10 +1,19 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import vectorButton from '../images/vectorButton.svg';
 import Card from './Card';
 import CurrentUserContext from '../contexts/CurrentUserContext';
 
 function Main({ onEditProfile, onAddPlace, onEditAvatar, onCardClick, onCardLike, cards, onCardDeleteClick }) {
   const currentUser = useContext(CurrentUserContext);
+  const [isHovered, setIsHovered] = useState(false);
+  const handleMouseEnter = () => {
+    console.log("Mouse entered")
+    setIsHovered(true);
+  }
+  const handleMouseLeave = () => {
+    console.log("Mouse left")
+    setIsHovered(false);
+  }
   return (
     <main className="content">
       {currentUser && (
@@ -19,12 +28,15 @@ function Main({ onEditProfile, onAddPlace, onEditAvatar, onCardClick, onCardLike
               {currentUser.avatar && (
                 <img
                   className="profile__avatar"
-                  src={currentUser.avatar.toString()}
+                  src={currentUser.avatar}
                   alt="Аватар"
-                  style={{ backgroundImage: `url(${currentUser.avatar})` }}
                 />
               )}
-              <span className="profile__avatar-edit-icon"></span>
+              <span
+                className={`profile__avatar-edit-icon ${isHovered ? "profile__avatar-edit-icon_active" : ""}`}
+                onMouseEnter={handleMouseEnter}
+                onMouseLeave={handleMouseLeave}
+              ></span>
             </button>
           </div>
           <div className="profile__info">

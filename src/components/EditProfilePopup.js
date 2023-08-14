@@ -2,6 +2,7 @@ import React, { useEffect, useContext, useState } from 'react';
 import PopupWithForm from "./PopupWithForm";
 import CurrentUserContext from '../contexts/CurrentUserContext';
 import Input from './Input';
+import { usePopupClose } from '../hooks/usePopupClose';
 
 function EditProfilePopup({ isOpen, onClose, onUpdateUser, isLoading }) {
   const currentUser = useContext(CurrentUserContext);
@@ -18,7 +19,7 @@ function EditProfilePopup({ isOpen, onClose, onUpdateUser, isLoading }) {
       setName(currentUser.name);
       setAbout(currentUser.about);
     }
-  }, [currentUser]);
+  }, [currentUser, isOpen]);
   const handleSubmit = (evt) => {
     evt.preventDefault();
     onUpdateUser({
@@ -27,6 +28,7 @@ function EditProfilePopup({ isOpen, onClose, onUpdateUser, isLoading }) {
     });
   }
   const buttonLabelText = isLoading ? "Сохранение" : "Сохранить";
+  usePopupClose(isOpen, onClose);
   return (
     <PopupWithForm
       title="Редактировать профиль"
@@ -46,7 +48,7 @@ function EditProfilePopup({ isOpen, onClose, onUpdateUser, isLoading }) {
         maxlength='40'
         placeholder='Имя'
         required
-        value={name}
+        value={name || ''}
         onChange={handleNameChange}
       />
       <Input
@@ -58,7 +60,7 @@ function EditProfilePopup({ isOpen, onClose, onUpdateUser, isLoading }) {
         maxlength='200'
         placeholder='О себе'
         required
-        value={about}
+        value={about || ''}
         onChange={handleAboutChange}
       />
     </PopupWithForm>
