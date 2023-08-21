@@ -1,6 +1,8 @@
 import React from 'react';
+import { usePopupClose } from '../hooks/usePopupClose';
 
 function PopupWithForm({ title, name, isOpen, onClose, onSubmit, isLoading, buttonLabel, children }) {
+  usePopupClose (isOpen, onClose);
   return (
     <div className={`popup popup_type_${name} ${isOpen ? 'popup_opened' : ''}`}>
       <div className="popup__container">

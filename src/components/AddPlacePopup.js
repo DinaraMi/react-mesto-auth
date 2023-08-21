@@ -25,7 +25,7 @@ function AddPlacePopup({ isOpen, onClose, onAddPlace, isLoading }) {
     });
   };
   const buttonLabelText = isLoading ? "Создание" : "Создать";
-  usePopupClose(isOpen, onClose);
+  
   return (
     <PopupWithForm
       title="Новое место"

@@ -1,4 +1,3 @@
-import { usePopupClose } from "../hooks/usePopupClose";
 import PopupWithForm from "./PopupWithForm";
 
 function DeletePopup ({ isOpen, onClose, onSubmit, isLoading}) {
@@ -9,7 +8,6 @@ function DeletePopup ({ isOpen, onClose, onSubmit, isLoading}) {
         e.preventDefault();
         onSubmit();
       }
-      usePopupClose(isOpen, onClose);
     return(
       <PopupWithForm
       title="Вы уверены?"
